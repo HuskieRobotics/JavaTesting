@@ -15,7 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Joystick.AxisType;;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Solenoid;
 
 
 /**
@@ -34,6 +35,8 @@ public class Robot extends TimedRobot {
   private TalonSRX[] leftTalons;
   private TalonSRX[] rightTalons;
   private Joystick joystick;
+  private Compressor compressor;
+  private Solenoid[] solenoids;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -45,13 +48,22 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
+    this.leftTalons = new TalonSRX[3];
+    this.rightTalons = new TalonSRX[3];
     for(int i=0;i<this.leftTalons.length;i++)
     {
-      leftTalons[i]=new TalonSRX(i+1);
+      leftTalons[i]=new TalonSRX(i+1); // check can IDs
       rightTalons[i]=new TalonSRX(i+4);
-    }
+    } // check inverts
 
     this.joystick = new Joystick(0);
+    this.compressor = new Compressor(21); // check
+
+    this.solenoids = new Solenoid[4]; // check how many
+    for(int i=0;i<this.solenoids.length;i++)
+    {
+      this.solenoids[i]=new Solenoid(i);
+    }
   }
 
   /**
@@ -68,6 +80,8 @@ public class Robot extends TimedRobot {
     double x = this.joystick.getX();
     double y = this.joystick.getY();
 
+    boolean b1 = this.joystick.getRawButton(0);
+
     double leftPower = (y+x)/2;
     double rightPower = (y-x)/2;
 
@@ -76,6 +90,9 @@ public class Robot extends TimedRobot {
       leftTalons[i].set(ControlMode.PercentOutput,leftPower);
       rightTalons[i].set(ControlMode.PercentOutput,rightPower);
     }
+
+    if(b1) {this.solenoids[0].set(true);}
+    else {this.solenoids[0].set(false);}
   }
 
   /**
