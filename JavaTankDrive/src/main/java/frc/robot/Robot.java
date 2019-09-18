@@ -16,6 +16,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.Joystick;
 
+import frc.robot.DriveStateMachine;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -34,6 +35,9 @@ public class Robot extends TimedRobot {
   private TalonSRX[] rightTalons;
   private Joystick joystick;
 
+  private DriveStateMachine stateMachine;
+
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -44,13 +48,15 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    for(int i=0;i<this.leftTalons.length;i++)
+    for(int i=0;i< leftTalons.length;i++)
     {
       leftTalons[i]=new TalonSRX(i+1);
       rightTalons[i]=new TalonSRX(i+4);
     }
 
-    this.joystick = new Joystick(0);
+     joystick = new Joystick(0);
+
+     stateMachine = new DriveStateMachine();
   }
 
   /**
@@ -64,13 +70,18 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() 
   {
-    double x = this.joystick.getX();
-    double y = this.joystick.getY();
+    double x =  joystick.getX();
+    double y =  joystick.getY();
 
-    double leftPower = (y+x)/2;
-    double rightPower = (y-x)/2;
+    boolean[] buttons = new boolean[4];
+    for(int i = 0; i<buttons.length;i++) buttons[i]=joystick.getRawButton(i);
 
-    for(int i = 0;i<this.leftTalons.length;i++)
+
+    double[] powers = stateMachine.getMotorPower(x,y,buttons);
+    double leftPower = powers[0];
+    double rightPower = powers[1];
+
+    for(int i = 0;i< leftTalons.length;i++)
     {
       leftTalons[i].set(ControlMode.PercentOutput,leftPower);
       rightTalons[i].set(ControlMode.PercentOutput,rightPower);
