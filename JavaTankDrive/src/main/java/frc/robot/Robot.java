@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Joystick.AxisType;;
-
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -31,8 +29,8 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  private TalonSRX[] leftTalons;
-  private TalonSRX[] rightTalons;
+  private TalonSRX[] leftTalons = new TalonSRX[4];
+  private TalonSRX[] rightTalons = new TalonSRX[4];
   private Joystick joystick;
 
   /**
@@ -48,7 +46,7 @@ public class Robot extends TimedRobot {
     for(int i=0;i<this.leftTalons.length;i++)
     {
       leftTalons[i]=new TalonSRX(i+1);
-      rightTalons[i]=new TalonSRX(i+4);
+      rightTalons[i]=new TalonSRX(i+5);
     }
 
     this.joystick = new Joystick(0);
@@ -68,8 +66,8 @@ public class Robot extends TimedRobot {
     double x = this.joystick.getX();
     double y = this.joystick.getY();
 
-    double leftPower = (y+x)/2;
-    double rightPower = (y-x)/2;
+    double leftPower = (y+x)/5;
+    double rightPower = -1*(y-x)/5;
 
     for(int i = 0;i<this.leftTalons.length;i++)
     {
