@@ -11,10 +11,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.CameraServer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -29,27 +26,17 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  private TalonSRX[] leftTalons = new TalonSRX[4];
-  private TalonSRX[] rightTalons = new TalonSRX[4];
-  private Joystick joystick;
-
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
    */
   @Override
   public void robotInit() {
+    CameraServer.getInstance().startAutomaticCapture();
+
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
-
-    for(int i=0;i<this.leftTalons.length;i++)
-    {
-      leftTalons[i]=new TalonSRX(i+1);
-      rightTalons[i]=new TalonSRX(i+5);
-    }
-
-    this.joystick = new Joystick(0);
   }
 
   /**
@@ -61,21 +48,7 @@ public class Robot extends TimedRobot {
    * LiveWindow and SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() 
-  {
-    double x = this.joystick.getX();
-    double y = this.joystick.getY();
-
-    double leftPower = (y+x)/5;
-    double rightPower = -1*(y-x)/5;
-
-    for(int i = 0;i<this.leftTalons.length;i++)
-    {
-      leftTalons[i].set(ControlMode.PercentOutput,leftPower);
-      rightTalons[i].set(ControlMode.PercentOutput,rightPower);
-    }
-    SmartDashboard.putNumber("Left Power",leftPower);
-    SmartDashboard.putNumber("Right Power", rightPower);
+  public void robotPeriodic() {
   }
 
   /**
