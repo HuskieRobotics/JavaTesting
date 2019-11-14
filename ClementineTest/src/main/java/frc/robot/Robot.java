@@ -11,9 +11,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -32,11 +32,14 @@ public class Robot extends TimedRobot {
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
-  private TalonSRX[] leftTalons;
-  private TalonSRX[] rightTalons;
   private Joystick joystick;
   private Compressor compressor;
   private Solenoid[] solenoids;
+
+  private CANSparkMax[] leftMotors;
+  private CANSparkMax[] rightMotors;
+  private static final int[] leftDeviceIDs = {1,2,3};
+  private static final int[] rightDeviceIDs = {4,5,6};
 
   /**
    * This function is run when the robot is first started up and should be
@@ -48,21 +51,36 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    this.leftTalons = new TalonSRX[3];
-    this.rightTalons = new TalonSRX[3];
-    for(int i=0;i<this.leftTalons.length;i++)
-    {
-      leftTalons[i]=new TalonSRX(i+1); // check can IDs
-      rightTalons[i]=new TalonSRX(i+4);
-    } // check inverts
 
     this.joystick = new Joystick(0);
     this.compressor = new Compressor(21); // check
+    this.compressor.start();
+    this.leftMotors=new CANSparkMax[3];
+    this.rightMotors=new CANSparkMax[3];
+
 
     this.solenoids = new Solenoid[4]; // check how many
     for(int i=0;i<this.solenoids.length;i++)
     {
       this.solenoids[i]=new Solenoid(i);
+    }
+
+    for(int i=0;i<3;i++) //check can ID's and reverses
+    {
+
+      leftMotors[i] = new CANSparkMax(leftDeviceIDs[i], MotorType.kBrushless);
+      leftMotors[i].restoreFactoryDefaults();
+      if(leftDeviceIDs[i]==2)
+      {
+        leftMotors[i].setInverted(!leftMotors[i].getInverted());
+      }
+      rightMotors[i] = new CANSparkMax(rightDeviceIDs[i], MotorType.kBrushless);
+      rightMotors[i].restoreFactoryDefaults();      
+      if(rightDeviceIDs[i]==6 ||rightDeviceIDs[i]==4)
+      {
+        rightMotors[i].setInverted(true);
+      }
+
     }
   }
 
@@ -78,19 +96,17 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() 
   {
     double x = this.joystick.getX();
-    double y = this.joystick.getY();
+    double y = -1*this.joystick.getY();
 
-    boolean b1 = this.joystick.getRawButton(0);
+    boolean b1 = this.joystick.getRawButton(1);
 
     double leftPower = (y+x)/2;
     double rightPower = (y-x)/2;
 
-    for(int i = 0;i<this.leftTalons.length;i++)
-    {
-      leftTalons[i].set(ControlMode.PercentOutput,leftPower);
-      rightTalons[i].set(ControlMode.PercentOutput,rightPower);
-    }
-
+    for(CANSparkMax leftMotor:leftMotors) {leftMotor.set(leftPower);}
+    for(CANSparkMax rightMotor:rightMotors) {rightMotor.set(rightPower);}
+    leftMotors[1].set(leftPower);
+    rightMotors[1].set(rightPower);
     if(b1) {this.solenoids[0].set(true);}
     else {this.solenoids[0].set(false);}
   }
